@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Pay Me, Dude!</title>
+    <meta charset="utf-8">
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+</head>
+<body>
+
+    <div class="container">
+
+        <section>
+            <div class="jumbotron">
+                <h2>Pay Me, Dude!</h2>
+                <h4>
+                    A basic online registry about those stingy people whom owe you some cash. Just type their names, how much and we'll remember it for you.
+                </h4>
+                <div style="height: 24px;"></div>
+                <p>
+                    How it works?
+                    <ul>
+                        <li>Your <strong>user or account</strong> (it's <a href="https://en.wikipedia.org/wiki/Case_sensitivity" target="_blank">case-sensitive</a>, 'Myemail' and 'myemail' aren't the same) will be your personal storage, use a nickname or email.</li>
+                        <li>Select an option or action from the list. For starters: select <strong>Add / Update</strong>, type a name and press <strong>REGISTER</strong> then we'll save that record.</li>
+                        <li>Use the default option (<strong>Show my debts</strong>) when you want to view your records. </li>
+                    </ul>
+                </p>
+            </div>
+
+            <div id="response" class="well" style="display:none"></div>
+
+            <div class="col-sm-12 col-md-10">
+                <form class="form-horizontal">
+                    <fieldset>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Your user / account:</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="me" placeholder="John The Saver" required="required" data-toggle="tooltip" data-placement="top" title="" data-original-title="Your username" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">What do you want?</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <select name="mode" class="form-control" style="width: 100%;">
+                                    <option value="3">Show my debts</option>
+                                    <option value="2">Clean a debt</option>
+                                    <option value="1">Add / Update a debt</option>
+                                </select>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="form-group extra-fields" style="display: none;">
+                            <div class="col-sm-4">
+                                <label class="control-label">Who owes you!?</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="name" placeholder="my enemy #1" data-toggle="tooltip" data-placement="top" title="" data-original-title="Say that name!" />
+                            </div>
+                        </div>
+                        <div class="form-group extra-fields" style="display: none;">
+                            <div class="col-sm-4">
+                                <label class="control-label">Who much?</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" name="qty" data-toggle="tooltip" data-placement="top" title="" data-original-title="Put a positive number for adding to the debt, otherwise, a negative for applying a pay." />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12 col-sm-offset-4">
+                                <button id="btnAction" type="submit" class="btn btn-primary">Register</button>
+                                <input type="reset" class="btn btn-danger" />
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+
+            <div class="col-sm-12 col-md-8 col-md-offset-2" style="margin-top: 25px;">
+                <div class="panel panel-primary" style="display: none;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Records</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Person</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="col-sm-6">
+                <label>Developed by: </label> <a href="https://github.com/jcorderodr" target="_blank" title="jcorderodr">jcorderodr</a> @ 2017
+                <p>
+                    <label>Created using: </label> webtask.io, mongodb, bootswatch and coffe.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+        (function () {
+
+            function setUiStates($el) {
+                switch ($el.val()) {
+                    case '1':
+                    case '2':
+                        $('.extra-fields').show();
+                        break;
+                    case '3':
+                    default:
+                        $('.extra-fields').hide();
+                        break;
+                }
+                $("[name='name']").val('');
+                $("[name='qty']").val(0);
+            }
+
+            function showMessage(msg) {
+                if (msg) {
+                    $('#response').show();
+                    $('#response').text(msg);
+                } else {
+                    $('#response').hide();
+                    $('#response').text('');
+                }
+            }
+
+            function showData(data) {
+                $table = $('table.table > tbody');
+                if (data) {
+                    $table.empty();
+                    for (var i in data) {
+                        $row = $('<tr>');
+                        $row.append($('<td>').text(data[i].person));
+                        $row.append($('<td>').text('$' + data[i].amount));
+
+                        $table.append($row);
+                    }
+                    $('div.panel.panel-primary').show();
+                } else {
+                    $('div.panel.panel-primary').hide();
+                }
+            }
+
+            $('#btnAction').click(function (e) {
+                e.preventDefault();
+                if ($('form.form-horizontal').valid()) {
+
+                    $('#btnAction').prop('disabled','disabled');
+
+                    var queryString = '?mode=' + $("[name='mode']").val() + '&name=' + $("[name='name']").val() + '&me=' + $("[name='me']").val() + '&qty=' + $("[name='qty']").val();
+                    $.get('https://wt-cad26b7f838a9e674d1e90f525ba4eea-0.run.webtask.io/pay-me' + queryString, function (response, msg_status, xhr) {
+
+                        // since the API doesnt send a message with a success, let's add some funny quotes...
+                        if (xhr.status === 200) {
+                            showData(response);
+                            showMessage("Here's the list of your enemies...");
+                        } else if (xhr.status === 201) {
+                            showData();
+                            showMessage("0kay, got it. We added that new fella.");
+                        } else if (xhr.status === 202) {
+                            showData();
+                            showMessage("Cool, we updated your info.");
+                        } else if (xhr.status === 204) {
+                            showData();
+                            showMessage("Looks like you're fine and nobody owes you a cent... Keep thinking and you'll remember someone. Trust me.");
+                        }
+                    }).fail(function (response) {
+                        showMessage(response.responseText);
+                        }).complete(function () {
+                            $('#btnAction').removeAttr('disabled');
+                        });
+                }
+            });
+
+            $("[name='mode']").change(function (e) {
+                setUiStates($(this));
+            });
+
+            setUiStates($("[name='mode']"));
+            $('.container [data-toggle="tooltip"]').tooltip();
+
+            $("form.form-horizontal").validate({
+                rules: {
+                    field: {
+                        me: "required",
+                        number: true
+                    }
+                }
+            });
+        })();
+    </script>
+
+</body>
+</html>
